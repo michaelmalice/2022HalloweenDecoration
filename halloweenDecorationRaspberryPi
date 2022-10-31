@@ -1,0 +1,83 @@
+import RPi.GPIO as GPIO 
+from time import sleep 
+from signal import signal, SIGINT
+from sys import exit
+from http.server import BaseHTTPRequestHandler,HTTPServer
+
+
+def handler(signal_received, frame):
+    # Handle any cleanup here
+    GPIO.output(22, False)
+    GPIO.output(27, False)
+    GPIO.output(4, False)
+    GPIO.output(17, False)
+    print('SIGINT or CTRL-C detected. Exiting gracefully')
+    exit(0)
+GPIO.setwarnings(False) 
+ 
+GPIO.setmode(GPIO.BCM) 
+GPIO.setup(17, GPIO.OUT)
+GPIO.setup(4, GPIO.OUT)
+GPIO.setup(27, GPIO.OUT)
+GPIO.setup(22, GPIO.OUT) 
+
+port = 80
+detected = 0
+class myHandler(BaseHTTPRequestHandler):
+
+    #Handler for the GET requests
+    def do_GET(self):
+        global detected
+        if self.path == '/detected':
+            self.send_response(200)
+            self.send_header('Content-type','text/html')
+            self.end_headers()
+            GPIO.output(22, True)
+            GPIO.output(27, True)
+            GPIO.output(17, True)
+            sleep(.1)
+            GPIO.output(17, False)
+            sleep(10)
+            GPIO.output(22, False)
+            GPIO.output(27, False)
+		
+
+server = HTTPServer(('', port), myHandler)
+print('Started httpserver on port ' + str(port))
+
+#Wait forever for incoming http requests
+server.serve_forever()
+
+
+
+
+
+
+
+''''
+GPIO.output(17, True)
+sleep(2)
+GPIO.output(17, False)
+sleep(2)
+GPIO.output(4, True)
+sleep(2)
+GPIO.output(4, False)
+sleep(2)
+while True:
+     GPIO.output(22, True)
+     sleep(.2)
+     GPIO.output(22, False)
+     sleep(.2)
+GPIO.output(27, True)
+sleep(2)
+GPIO.output(27, False)
+GPIO.output(4, False)
+GPIO.output(17, False)
+GPIO.output(22, False)
+GPIO.output(27, False)
+while True:
+    GPIO.output(22, False)
+    GPIO.output(27, False)
+    #sleep(.5)
+    GPIO.output(27, True)
+    GPIO.output(22, True)'''
